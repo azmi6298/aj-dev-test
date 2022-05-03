@@ -7,10 +7,11 @@
         <b-input-group>
           <b-form-input
             id="searchKeyword"
+            v-model="searchKeyword"
             placeholder="Search.."
           ></b-form-input>
           <b-input-group-append>
-            <b-button variant="primary" @click="search">
+            <b-button variant="primary" @click="searchForKeyword">
               <BIconSearch></BIconSearch>
             </b-button>
           </b-input-group-append>
@@ -99,6 +100,10 @@ export default {
       query += `&gender=${this.selectedFilter}`
     }
 
+    if (this.searchKeyword !== '') {
+      query += `&keyword=${this.searchKeyword}`
+    }
+
     const { results: res } = await this.$axios.$get(
       `https://randomuser.me/api/?page=${this.currentPage}&results=5${query}`
     )
@@ -125,8 +130,8 @@ export default {
     refresh() {
       this.$fetch()
     },
-    search() {
-      console.log('search')
+    searchForKeyword() {
+      this.$fetch()
     },
     resetFilter() {
       this.selectedFilter = null
