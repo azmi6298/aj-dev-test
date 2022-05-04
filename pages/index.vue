@@ -19,30 +19,29 @@
       </div>
       <div role="group" class="ml-3">
         <label for="filters">Gender</label>
-        <b-form-select
-          id="filters"
-          v-model="selectedFilter"
-          :options="filterOptions"
-          placeholder="Search.."
-        ></b-form-select>
+        <BasicSelect
+          :filter-options="filterOptions"
+          :is-reset-select="isResetSelect"
+          @selected="handleSelectGender"
+        />
       </div>
       <b-button variant="outline-secondary" class="ml-3" @click="resetFilter">
         Reset Filter
       </b-button>
     </div>
-    <b-table hover :items="users" :fields="fields"></b-table>
-    <div class="overflow-auto">
-      <b-pagination
-        v-model="currentPage"
-        :total-rows="rows"
-        align="right"
-      ></b-pagination>
-    </div>
+    <BasicTable
+      :items="users"
+      :fields="fields"
+      :rows="rows"
+      @pageChanged="handleChangePage"
+    />
   </b-container>
 </template>
 
 <script>
 import { BIconSearch } from 'bootstrap-vue'
+import BasicTable from '../components/table/BasicTable.vue'
+import BasicSelect from '~/components/select/BasicSelect.vue'
 
 const fields = [
   {
@@ -81,16 +80,19 @@ export default {
   name: 'IndexPage',
   components: {
     BIconSearch,
+    BasicSelect,
+    BasicTable,
   },
   data() {
     return {
       users: [],
       searchKeyword: '',
-      filterOptions,
       selectedFilter: null,
+      isResetSelect: false,
+      filterOptions,
       fields,
       rows: 100,
-      currentPage: 1,
+      targetPage: 1,
     }
   },
   async fetch() {
@@ -105,7 +107,7 @@ export default {
     }
 
     const { results: res } = await this.$axios.$get(
-      `https://randomuser.me/api/?page=${this.currentPage}&results=5${query}`
+      `https://randomuser.me/api/?page=${this.targetPage}&results=5${query}`
     )
 
     this.users = res.map((data) => {
@@ -118,14 +120,6 @@ export default {
       }
     })
   },
-  watch: {
-    selectedFilter() {
-      this.refresh()
-    },
-    currentPage() {
-      this.refresh()
-    },
-  },
   methods: {
     refresh() {
       this.$fetch()
@@ -134,7 +128,16 @@ export default {
       this.$fetch()
     },
     resetFilter() {
-      this.selectedFilter = null
+      this.isResetSelect = true
+    },
+    handleSelectGender(value) {
+      this.selectedFilter = value
+      this.isResetSelect = false
+      this.refresh()
+    },
+    handleChangePage(value) {
+      this.targetPage = value
+      this.refresh()
     },
   },
 }
